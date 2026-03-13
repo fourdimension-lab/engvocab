@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Vocabulary Quiz App</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 32px 24px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        /* Header Styles */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .avatar {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            flex-shrink: 0;
+        }
+
+        .user-info h2 {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .user-info p {
+            color: #666;
+            font-size: clamp(0.8rem, 3vw, 0.95rem);
+        }
+
+        .stats {
+            display: flex;
+            gap: clamp(16px, 5vw, 32px);
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 70px;
+        }
+
+        .stat-value {
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: clamp(0.7rem, 2.5vw, 0.85rem);
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Levels Grid */
+        .levels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr));
+            gap: clamp(16px, 3vw, 24px);
+            margin-top: 24px;
+        }
+
+        .level-card {
+            background: white;
+            border-radius: 24px;
+            padding: 24px 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .level-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(102, 126, 234, 0.3);
+            border-color: #667eea;
+        }
+
+        .level-card.locked {
+            opacity: 0.7;
+            filter: grayscale(0.5);
+            cursor: not-allowed;
+        }
+
+        .level-card.locked:hover {
+            transform: none;
+            border-color: transparent;
+        }
+
+        .level-icon {
+            font-size: clamp(2rem, 8vw, 3rem);
+            margin-bottom: 16px;
+        }
+
+        .level-title {
+            font-size: clamp(1.2rem, 4vw, 1.5rem);
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .level-description {
+            color: #666;
+            font-size: clamp(0.85rem, 3vw, 0.95rem);
+            margin-bottom: 16px;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .level-progress {
+            margin-top: auto;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            border-radius: 4px;
+            transition: width 0.3s;
+        }
+
+        .progress-text {
+            font-size: 0.85rem;
+            color: #666;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Quiz Container */
+        .quiz-container {
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .question-header {
+            margin-bottom: 32px;
+        }
+
+        .question-number {
+            font-size: 0.95rem;
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .question-text {
+            font-size: clamp(1.1rem, 4vw, 1.4rem);
+            color: #333;
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+            gap: 16px;
+            margin: 32px 0;
+        }
+
+        .option-btn {
+            background: white;
+            border: 2px solid #e0e0e0;
+            border-radius: 16px;
+            padding: clamp(16px, 4vw, 20px);
+            font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            width: 100%;
+            color: #333;
+            line-height: 1.5;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: #f8f9ff;
+            border-color: #667eea;
+            transform: translateX(4px);
+        }
+
+        .option-btn.selected {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .option-btn.correct {
+            background: #10b981;
+            border-color: #10b981;
+            color: white;
+        }
+
+        .option-btn.wrong {
+            background: #ef4444;
+            border-color: #ef4444;
+            color: white;
+        }
+
+        .option-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.7;
+        }
+
+        /* Completion Screen */
+        .completion-screen {
+            text-align: center;
+            padding: clamp(24px, 6vw, 48px) clamp(16px, 4vw, 32px);
+        }
+
+        .reward-icon {
+            font-size: clamp(3rem, 12vw, 5rem);
+            margin-bottom: 24px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .reward-title {
+            font-size: clamp(1.5rem, 6vw, 2.5rem);
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 16px;
+        }
+
+        .points-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 32px;
+            border-radius: 50px;
+            font-size: clamp(1.2rem, 4vw, 1.8rem);
+            font-weight: bold;
+            margin: 24px 0;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Buttons */
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: clamp(12px, 3vw, 16px) clamp(24px, 5vw, 32px);
+            border-radius: 50px;
+            font-size: clamp(0.95rem, 3.5vw, 1.1rem);
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: fit-content;
+            min-width: 200px;
+            margin: 0 auto;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(102, 126, 234, 0.5);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #667eea;
+            border: 2px solid #667eea;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 32px;
+        }
+
+        /* Welcome Screen */
+        .welcome-screen {
+            text-align: center;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .welcome-title {
+            font-size: clamp(2rem, 8vw, 3rem);
+            font-weight: bold;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 24px;
+        }
+
+        .welcome-text {
+            color: #666;
+            font-size: clamp(1rem, 4vw, 1.2rem);
+            margin-bottom: 32px;
+            line-height: 1.6;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .input-field {
+            flex: 1;
+            min-width: 250px;
+            padding: clamp(12px, 3vw, 16px);
+            border: 2px solid #e0e0e0;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        /* Responsive Utilities */
+        .text-center {
+            text-align: center;
+        }
+
+        .mt-4 {
+            margin-top: 24px;
+        }
+
+        .mb-4 {
+            margin-bottom: 24px;
+        }
+
+        /* Small screens */
+        @media (max-width: 640px) {
+            body {
+                padding: 8px;
+            }
+
+            .card {
+                padding: 24px 16px;
+                border-radius: 24px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats {
+                width: 100%;
+                justify-content: space-around;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .input-group {
+                flex-direction: column;
+            }
+
+            .input-field {
+                width: 100%;
+            }
+        }
+
+        /* Medium screens */
+        @media (min-width: 641px) and (max-width: 1024px) {
+            .card {
+                padding: 28px 20px;
+            }
+
+            .levels-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Touch device optimizations */
+        @media (hover: none) {
+            .level-card:hover {
+                transform: none;
+            }
+
+            .option-btn:hover {
+                transform: none;
+            }
+
+            .btn:hover {
+                transform: none;
+            }
+        }
+
+        /* Landscape mode */
+        @media (max-height: 600px) and (orientation: landscape) {
+            .card {
+                padding: 16px;
+            }
+
+            .levels-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .avatar {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container" id="app"></div>
+
+    <script>
+        (function() {
+            // App state
+            const state = {
+                name: '',
+                points: 0,
+                level: 1,
+                levels: [
+                    { id: 1, name: 'Beginner', unlocked: true, completed: false, icon: '🌱', description: 'Start your journey with basic words' },
+                    { id: 2, name: 'Intermediate', unlocked: false, completed: false, icon: '🌿', description: 'Expand your vocabulary' },
+                    { id: 3, name: 'Advanced', unlocked: false, completed: false, icon: '🌳', description: 'Master complex words' },
+                    { id: 4, name: 'Expert', unlocked: false, completed: false, icon: '🏆', description: 'Become a vocabulary master' }
+                ]
+            };
+
+            const app = document.getElementById('app');
+
+            // Helper function to render with header
+            function renderWithHeader(headerContent, mainContent, showBackButton = true) {
+                const html = `
+                    <div class="card">
+                        <div class="header">
+                            <div class="header-left">
+                                ${showBackButton ? '<button class="btn btn-secondary" onclick="renderMainMenu()">← Back</button>' : ''}
+                                <div class="avatar">${state.name ? state.name[0].toUpperCase() : 'G'}</div>
+                                <div class="user-info">
+                                    <h2>${state.name || 'Guest'}</h2>
+                                    <p>Level ${state.level} • ${state.points} points</p>
+                                </div>
+                            </div>
+                            <div class="stats">
+                                <div class="stat-item">
+                                    <div class="stat-value">${state.level}</div>
+                                    <div class="stat-label">Level</div>
+                                </div>
+                                <div class="stat-item">
+                                    <div class="stat-value">${state.points}</div>
+                                    <div class="stat-label">Points</div>
+                                </div>
+                            </div>
+                        </div>
+                        ${headerContent}
+                        ${mainContent}
+                    </div>
+                `;
+                app.innerHTML = html;
+            }
+
+            // Welcome screen
+            window.renderWelcome = function() {
+                const html = `
+                    <div class="card">
+                        <div class="welcome-screen">
+                            <div class="welcome-title">📚 VocabMaster</div>
+                            <div class="welcome-text">Expand your vocabulary, one word at a time. Start your journey to becoming a wordsmith!</div>
+                            <div class="input-group">
+                                <input type="text" class="input-field" id="nameInput" placeholder="Enter your name" maxlength="20">
+                                <button class="btn" onclick="startJourney()">Begin Journey →</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                app.innerHTML = html;
+            };
+
+            // Start journey
+            window.startJourney = function() {
+                const nameInput = document.getElementById('nameInput');
+                if (nameInput && nameInput.value.trim()) {
+                    state.name = nameInput.value.trim();
+                    renderMainMenu();
+                } else {
+                    alert('Please enter your name to continue!');
+                }
+            };
+
+            // Main menu
+            window.renderMainMenu = function() {
+                const headerContent = '';
+                
+                const levelsHTML = state.levels.map(level => `
+                    <div class="level-card ${!level.unlocked ? 'locked' : ''}" onclick="${level.unlocked ? `openLevel(${level.id})` : ''}">
+                        <div class="level-icon">${level.icon}</div>
+                        <div class="level-title">${level.name}</div>
+                        <div class="level-description">${level.description}</div>
+                        <div class="level-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${level.completed ? '100' : '0'}%"></div>
+                            </div>
+                            <div class="progress-text">
+                                <span>${level.completed ? 'Completed' : 'Not started'}</span>
+                                ${!level.unlocked ? '<span>🔒 Locked</span>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+
+                const mainContent = `
+                    <div class="levels-grid">
+                        ${levelsHTML}
+                    </div>
+                `;
+
+                renderWithHeader(headerContent, mainContent, false);
+            };
+
+            // Open level
+            window.openLevel = function(levelId) {
+                const level = state.levels.find(l => l.id === levelId);
+                if (!level) return;
+
+                const headerContent = `<h2 style="margin-bottom: 16px;">${level.icon} ${level.name} Level</h2>`;
+                
+                const mainContent = `
+                    <div class="text-center">
+                        <p class="welcome-text" style="margin-bottom: 32px;">${level.description}</p>
+                        <div class="btn-group">
+                            <button class="btn" onclick="startQuiz(${levelId})">Start Quiz</button>
+                            <button class="btn btn-secondary" onclick="renderMainMenu()">Choose Another Level</button>
+                        </div>
+                    </div>
+                `;
+
+                renderWithHeader(headerContent, mainContent);
+            };
+
+            // Quiz
+            window.startQuiz = function(levelId) {
+                const level = state.levels.find(l => l.id === levelId);
+                const questions = [
+                    { question: 'What is the synonym of "happy"?', options: ['Sad', 'Joyful', 'Angry', 'Tired'], correct: 1 },
+                    { question: 'What is the antonym of "hot"?', options: ['Warm', 'Cold', 'Boiling', 'Humid'], correct: 1 },
+                    { question: 'What does "benevolent" mean?', options: ['Kind', 'Evil', 'Strict', 'Weak'], correct: 0 },
+                    { question: 'What is a synonym for "intelligent"?', options: ['Foolish', 'Smart', 'Slow', 'Dull'], correct: 1 },
+                    { question: 'What does "ephemeral" mean?', options: ['Permanent', 'Short-lived', 'Strong', 'Weak'], correct: 1 }
+                ];
+
+                let currentQuestion = 0;
+                let score = 0;
+                let selectedAnswer = null;
+                let answerSubmitted = false;
+
+                function renderQuestion() {
+                    if (currentQuestion >= questions.length) {
+                        completeQuiz(levelId, score);
+                        return;
+                    }
+
+                    const q = questions[currentQuestion];
+                    
+                    const headerContent = `
+                        <div class="question-header">
+                            <div class="question-number">Question ${currentQuestion + 1}/${questions.length}</div>
+                            <div class="question-text">${q.question}</div>
+                        </div>
+                    `;
+
+                    const optionsHTML = q.options.map((option, index) => {
+                        let optionClass = 'option-btn';
+                        if (selectedAnswer === index && !answerSubmitted) optionClass += ' selected';
+                        if (answerSubmitted) {
+                            if (index === q.correct) optionClass += ' correct';
+                            else if (selectedAnswer === index && selectedAnswer !== q.correct) optionClass += ' wrong';
+                        }
+                        return `<button class="${optionClass}" onclick="selectAnswer(${index})" ${answerSubmitted ? 'disabled' : ''}>${option}</button>`;
+                    }).join('');
+
+                    const mainContent = `
+                        <div class="quiz-container">
+                            <div class="options-grid">
+                                ${optionsHTML}
+                            </div>
+                            <div class="btn-group">
+                                ${!answerSubmitted ? 
+                                    '<button class="btn" onclick="submitAnswer()" ' + (selectedAnswer === null ? 'disabled' : '') + '>Submit Answer</button>' : 
+                                    '<button class="btn" onclick="nextQuestion()">Next Question</button>'
+                                }
+                            </div>
+                        </div>
+                    `;
+
+                    renderWithHeader(headerContent, mainContent);
+
+                    // Make functions available for this quiz
+                    window.selectAnswer = function(index) {
+                        if (!answerSubmitted) {
+                            selectedAnswer = index;
+                            renderQuestion();
+                        }
+                    };
+
+                    window.submitAnswer = function() {
+                        if (selectedAnswer !== null && !answerSubmitted) {
+                            answerSubmitted = true;
+                            if (selectedAnswer === q.correct) {
+                                score++;
+                            }
+                            renderQuestion();
+                        }
+                    };
+
+                    window.nextQuestion = function() {
+                        currentQuestion++;
+                        selectedAnswer = null;
+                        answerSubmitted = false;
+                        renderQuestion();
+                    };
+                }
+
+                window.completeQuiz = function(levelId, score) {
+                    const pointsEarned = score * 10;
+                    state.points += pointsEarned;
+                    
+                    // Update level completion
+                    const level = state.levels.find(l => l.id === levelId);
+                    if (level) {
+                        level.completed = true;
+                        
+                        // Unlock next level
+                        const nextLevel = state.levels.find(l => l.id === levelId + 1);
+                        if (nextLevel) {
+                            nextLevel.unlocked = true;
+                        }
+                    }
+
+                    const pointsMsg = `+${pointsEarned} points!`;
+                    
+                    const headerContent = '';
+                    
+                    const mainContent = `
+                        <div class="completion-screen">
+                            <div class="reward-icon">🏆</div>
+                            <div class="reward-title">Level Complete!</div>
+                            <div class="points-badge">${pointsMsg}</div>
+                            <button class="btn" onclick="renderMainMenu()">🌟 Continue</button>
+                        </div>
+                    `;
+
+                    renderWithHeader(headerContent, mainContent, false);
+                };
+
+                renderQuestion();
+            };
+
+            // Initial render
+            if (state.name) {
+                renderMainMenu();
+            } else {
+                renderWelcome();
+            }
+
+            // Make functions global
+            window.renderMainMenu = renderMainMenu;
+            window.openLevel = openLevel;
+            window.startQuiz = startQuiz;
+        })();
+    </script>
+</body>
+</html>
