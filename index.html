@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>Vocabulary Quiz App - 100+ Questions Per Level</title>
+    <title>VocabMaster - Learn 400+ Words</title>
+    
+    <!-- Your Google AdSense Script -->
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8575731546488429"
      crossorigin="anonymous"></script>
+    
     <style>
         * {
             margin: 0;
@@ -126,6 +129,60 @@
             color: #666;
             text-transform: uppercase;
             letter-spacing: 1px;
+        }
+
+        /* Ad Styles */
+        .ad-container {
+            width: 100%;
+            margin: 20px 0;
+            padding: 10px 0;
+            background: #f8f9ff;
+            border-radius: 12px;
+            text-align: center;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .ad-banner {
+            width: 100%;
+            min-height: 90px;
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 8px;
+        }
+
+        .ad-in-feed {
+            width: 100%;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9ff;
+            border-radius: 16px;
+            border: 1px dashed #667eea;
+        }
+
+        .ad-sidebar {
+            width: 300px;
+            margin-left: 20px;
+            position: sticky;
+            top: 20px;
+        }
+
+        .desktop-only {
+            display: none;
+        }
+
+        @media (min-width: 1024px) {
+            .desktop-only {
+                display: block;
+            }
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
         }
 
         /* Levels Grid */
@@ -554,6 +611,9 @@
 
     <script>
         (function() {
+            // Your AdSense Publisher ID
+            const PUBLISHER_ID = 'ca-pub-8575731546488429';
+            
             // Question banks for each level
             const questionBanks = {
                 beginner: [
@@ -796,7 +856,6 @@
                     { question: 'What is "entropy"?', options: ['Order', 'Disorder', 'Balance', 'Harmony'], correct: 1 },
                     { question: 'What is "quantum"?', options: ['Large amount', 'Discrete amount', 'Continuous', 'Infinite'], correct: 1 },
                     { question: 'What is "nebula"?', options: ['Star cluster', 'Gas cloud', 'Black hole', 'Planet'], correct: 1 },
-                    { question: 'What is "photosynthesis"?', options: ['Light eating', 'Light making', 'Light breaking', 'Light storing'], correct: 0 },
                     { question: 'What is "mitochondria"?', options: ['Cell brain', 'Cell power', 'Cell wall', 'Cell membrane'], correct: 1 },
                     { question: 'What is "ecosystem"?', options: ['Single organism', 'Living community', 'Dead matter', 'Rock formation'], correct: 1 },
                     { question: 'What is "biodiversity"?', options: ['Single species', 'Species variety', 'No species', 'Few species'], correct: 1 },
@@ -850,7 +909,30 @@
 
             const app = document.getElementById('app');
 
-            // Helper function to render with header
+            // Helper function to create ad units
+            function createAdUnit(containerId, adSlot) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const ins = document.createElement('ins');
+                ins.className = 'adsbygoogle';
+                ins.style.display = 'block';
+                ins.setAttribute('data-ad-client', PUBLISHER_ID);
+                ins.setAttribute('data-ad-slot', adSlot);
+                ins.setAttribute('data-ad-format', 'auto');
+                ins.setAttribute('data-full-width-responsive', 'true');
+                
+                container.innerHTML = '';
+                container.appendChild(ins);
+                
+                try {
+                    (adsbygoogle = window.adsbygoogle || []).push({});
+                } catch (e) {
+                    console.log('AdSense not ready yet');
+                }
+            }
+
+            // Helper function to render with header and ads
             function renderWithHeader(headerContent, mainContent, showBackButton = true) {
                 const html = `
                     <div class="card">
@@ -874,11 +956,28 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Top Banner Ad -->
+                        <div class="ad-container" id="top-ad"></div>
+                        
                         ${headerContent}
-                        ${mainContent}
+                        
+                        <div class="content-wrapper">
+                            ${mainContent}
+                        </div>
+                        
+                        <!-- Bottom Banner Ad -->
+                        <div class="ad-container" id="bottom-ad"></div>
                     </div>
                 `;
+                
                 app.innerHTML = html;
+                
+                // Initialize ads after DOM is ready
+                setTimeout(() => {
+                    createAdUnit('top-ad', '1234567890'); // Replace with your actual top ad slot ID
+                    createAdUnit('bottom-ad', '1234567891'); // Replace with your actual bottom ad slot ID
+                }, 500);
             }
 
             // Welcome screen
@@ -893,9 +992,16 @@
                                 <button class="btn" onclick="startJourney()">Begin Journey →</button>
                             </div>
                         </div>
+                        
+                        <!-- Welcome Screen Ad -->
+                        <div class="ad-container" id="welcome-ad"></div>
                     </div>
                 `;
                 app.innerHTML = html;
+                
+                setTimeout(() => {
+                    createAdUnit('welcome-ad', '1234567892'); // Replace with your actual welcome ad slot ID
+                }, 500);
             };
 
             // Start journey
@@ -913,11 +1019,11 @@
             window.renderMainMenu = function() {
                 const headerContent = '';
                 
-                const levelsHTML = state.levels.map(level => {
+                const levelsHTML = state.levels.map((level, index) => {
                     const progress = state.levelProgress[level.id] || 0;
                     const progressPercent = (progress / level.totalQuestions) * 100;
                     
-                    return `
+                    let levelCard = `
                     <div class="level-card ${!level.unlocked ? 'locked' : ''}" onclick="${level.unlocked ? `openLevel(${level.id})` : ''}">
                         <div class="level-icon">${level.icon}</div>
                         <div class="level-title">${level.name}</div>
@@ -932,7 +1038,19 @@
                             </div>
                         </div>
                     </div>
-                `}).join('');
+                    `;
+                    
+                    // Add in-feed ad after every 2 levels
+                    if ((index + 1) % 2 === 0 && index < state.levels.length - 1) {
+                        levelCard += `
+                            <div class="ad-in-feed" id="feed-ad-${index}">
+                                <div class="ad-container"></div>
+                            </div>
+                        `;
+                    }
+                    
+                    return levelCard;
+                }).join('');
 
                 const mainContent = `
                     <div class="levels-grid">
@@ -941,6 +1059,22 @@
                 `;
 
                 renderWithHeader(headerContent, mainContent, false);
+                
+                // Initialize feed ads
+                setTimeout(() => {
+                    for (let i = 0; i < state.levels.length; i++) {
+                        if ((i + 1) % 2 === 0 && i < state.levels.length - 1) {
+                            const feedAd = document.getElementById(`feed-ad-${i}`);
+                            if (feedAd) {
+                                const adContainer = feedAd.querySelector('.ad-container');
+                                if (adContainer) {
+                                    adContainer.id = `feed-ad-inner-${i}`;
+                                    createAdUnit(`feed-ad-inner-${i}`, '1234567893'); // Replace with your actual feed ad slot ID
+                                }
+                            }
+                        }
+                    }
+                }, 600);
             };
 
             // Open level
@@ -965,9 +1099,16 @@
                             <button class="btn btn-secondary" onclick="renderMainMenu()">Choose Another Level</button>
                         </div>
                     </div>
+                    
+                    <!-- Level Page Ad -->
+                    <div class="ad-container" id="level-ad"></div>
                 `;
 
                 renderWithHeader(headerContent, mainContent);
+                
+                setTimeout(() => {
+                    createAdUnit('level-ad', '1234567894'); // Replace with your actual level page ad slot ID
+                }, 500);
             };
 
             // Quiz
@@ -1001,10 +1142,20 @@
                 let score = 0;
                 let selectedAnswer = null;
                 let answerSubmitted = false;
+                let adShown = false;
 
                 function renderQuestion() {
                     if (currentQuestion >= questions.length) {
                         completeQuiz(levelId, score, questions.length);
+                        return;
+                    }
+
+                    // Show ad every 10 questions
+                    if (currentQuestion > 0 && currentQuestion % 10 === 0 && !adShown) {
+                        showQuizAd(() => {
+                            adShown = true;
+                            continueToQuestion();
+                        });
                         return;
                     }
 
@@ -1045,9 +1196,17 @@
                                 }
                             </div>
                         </div>
+                        
+                        <!-- Quiz Page Ad -->
+                        <div class="ad-container" id="quiz-ad"></div>
                     `;
 
                     renderWithHeader(headerContent, mainContent);
+                    
+                    // Initialize quiz page ad
+                    setTimeout(() => {
+                        createAdUnit('quiz-ad', '1234567895'); // Replace with your actual quiz ad slot ID
+                    }, 500);
 
                     // Make functions available for this quiz
                     window.selectAnswer = function(index) {
@@ -1071,8 +1230,48 @@
                         currentQuestion++;
                         selectedAnswer = null;
                         answerSubmitted = false;
+                        adShown = false;
                         renderQuestion();
                     };
+                }
+
+                function showQuizAd(callback) {
+                    const adContainer = document.createElement('div');
+                    adContainer.className = 'ad-container';
+                    adContainer.style.position = 'fixed';
+                    adContainer.style.top = '50%';
+                    adContainer.style.left = '50%';
+                    adContainer.style.transform = 'translate(-50%, -50%)';
+                    adContainer.style.zIndex = '1000';
+                    adContainer.style.maxWidth = '400px';
+                    adContainer.style.background = 'white';
+                    adContainer.style.padding = '20px';
+                    adContainer.style.borderRadius = '16px';
+                    adContainer.style.boxShadow = '0 10px 40px rgba(0,0,0,0.2)';
+                    
+                    const adInner = document.createElement('div');
+                    adInner.id = 'interstitial-ad';
+                    adContainer.appendChild(adInner);
+                    
+                    const closeBtn = document.createElement('button');
+                    closeBtn.textContent = 'Continue to Quiz';
+                    closeBtn.className = 'btn';
+                    closeBtn.style.marginTop = '15px';
+                    closeBtn.onclick = () => {
+                        document.body.removeChild(adContainer);
+                        callback();
+                    };
+                    adContainer.appendChild(closeBtn);
+                    
+                    document.body.appendChild(adContainer);
+                    
+                    setTimeout(() => {
+                        createAdUnit('interstitial-ad', '1234567896'); // Replace with your actual interstitial ad slot ID
+                    }, 100);
+                }
+
+                function continueToQuestion() {
+                    renderQuestion();
                 }
 
                 renderQuestion();
@@ -1129,6 +1328,9 @@
                             </div>
                         </div>
                         
+                        <!-- Completion Screen Ad -->
+                        <div class="ad-container" id="completion-ad"></div>
+                        
                         <div class="btn-group">
                             <button class="btn" onclick="renderMainMenu()">🌟 Main Menu</button>
                             <button class="btn btn-secondary" onclick="startQuiz(${levelId})">🔄 Try Again</button>
@@ -1137,6 +1339,10 @@
                 `;
 
                 renderWithHeader(headerContent, mainContent, false);
+                
+                setTimeout(() => {
+                    createAdUnit('completion-ad', '1234567897'); // Replace with your actual completion ad slot ID
+                }, 500);
             };
 
             // Initial render
